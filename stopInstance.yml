@@ -1,0 +1,23 @@
+Parameters:
+  ExistingInstanceId:
+    Type: String
+    Default: i-0c1ab42c9b2e14de0
+
+Resources:
+  NetworkPacketsInAlarm:
+    Type: 'AWS::CloudWatch::Alarm'
+    Properties:
+      AlarmName: 'CPUUtilizationAlarm'
+      AlarmDescription: 'Alarm if CPU utilization is less than 10% for 3 minutes.'
+      Namespace: 'AWS/EC2'
+      MetricName: CPUUtilization
+      Statistic: 'Average'
+      Period: '60'
+      EvaluationPeriods: '3'
+      Threshold: '10'
+      AlarmActions:
+        - !Sub 'arn:aws:automate:${AWS::Region}:ec2:stop'
+      ComparisonOperator: 'LessThanOrEqualToThreshold'
+      Dimensions:
+        - Name: InstanceId
+          Value: !Ref ExistingInstanceId
