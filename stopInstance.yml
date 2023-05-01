@@ -8,12 +8,12 @@ Resources:
     Type: 'AWS::CloudWatch::Alarm'
     Properties:
       AlarmName: 'CPUUtilizationAlarm'
-      AlarmDescription: 'Alarm if CPU utilization is less than 10% for 3 minutes.'
+      AlarmDescription: 'Alarm if CPU utilization is less than 10% for 15 minutes.'
       Namespace: 'AWS/EC2'
       MetricName: CPUUtilization
       Statistic: 'Average'
       Period: '60'
-      EvaluationPeriods: '3'
+      EvaluationPeriods: '15'
       Threshold: '10'
       AlarmActions:
         - !Sub 'arn:aws:automate:${AWS::Region}:ec2:stop'
