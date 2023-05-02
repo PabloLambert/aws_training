@@ -1,0 +1,44 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'CloudFormation Template: Crear un usuario con permisos para detener instancias EC2'
+
+Resources:
+  EC2StopInstancesUser:
+    Type: 'AWS::IAM::User'
+    Properties:
+      UserName: 'EC2StopInstancesUser'
+      Path: '/'
+
+  EC2StopInstancesAccessKey:
+    Type: 'AWS::IAM::AccessKey'
+    Properties:
+      UserName: !Ref EC2StopInstancesUser
+
+  EC2StopInstancesPolicy:
+    Type: 'AWS::IAM::Policy'
+    Properties:
+      PolicyName: 'EC2StopInstancesPolicy'
+      Users:
+        - !Ref EC2StopInstancesUser
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: 'Allow'
+            Action:
+              - 'ec2:StartInstances'
+              - 'ec2:StopInstances'
+              - 'ec2:DescribeInstances'
+              - 'ec2:DescribeInstanceStatus'
+            Resource: '*'
+
+Outputs:
+  AccessKeyId:
+    Description: 'Access Key ID para el usuario EC2StopInstancesUser'
+    Value: !Ref EC2StopInstancesAccessKey
+    Export:
+      Name: 'EC2StopInstancesUser-AccessKeyId'
+
+  SecretAccessKey:
+    Description: 'Secret Access Key para el usuario EC2StopInstancesUser'
+    Value: !GetAtt [EC2StopInstancesAccessKey, SecretAccessKey]
+    Export:
+      Name: 'EC2StopInstancesUser-SecretAccessKey'
