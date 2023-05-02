@@ -1,0 +1,20 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Resources:
+  AppRunnerService:
+    Type: AWS::AppRunner::Service
+    Properties:
+      ServiceName: MyNginxService
+      SourceConfiguration:
+        ImageRepository:
+          ImageIdentifier: public.ecr.aws/nginx/nginx:latest
+          ImageConfiguration: 
+              Port: 80
+          ImageRepositoryType: ECR_PUBLIC
+      InstanceConfiguration:
+        Cpu: 2 vCPU
+        Memory: 4 GB
+
+Outputs:
+  AppRunnerServiceURL:
+    Description: App Runner Service URL
+    Value: !GetAtt AppRunnerService.ServiceUrl
