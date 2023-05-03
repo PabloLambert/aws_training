@@ -1,0 +1,65 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Parameters:
+  VpcId:
+    Type: String
+    Description: "VPC ID"
+  SubnetA:
+    Type: String
+    Description: "Subnet A ID"
+  SubnetB:
+    Type: String
+    Description: "Subnet B ID"
+Resources:
+  MyLaunchConfig:
+    Type: "AWS::AutoScaling::LaunchConfiguration"
+    Properties:
+      ImageId: !FindInMap [AWSRegionToAMI, !Ref "AWS::Region", "AMI"]
+      InstanceType: "t2.micro"
+      SecurityGroups:
+        - !Ref MySecurityGroup
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/bash
+          yum update -y
+          yum install -y httpd
+          echo "Hello World from $(hostname -f)" > /var/www/html/index.html
+          systemctl start httpd.service
+          systemctl enable httpd.service
+  MySecurityGroup:
+    Type: "AWS::EC2::SecurityGroup"
+    Properties:
+      GroupDescription: "Allow SSH and HTTP traffic"
+      VpcId: !Ref VpcId
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: "0.0.0.0/0"
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: "0.0.0.0/0"
+  MyAutoScalingGroup:
+    Type: "AWS::AutoScaling::AutoScalingGroup"
+    Properties:
+      AvailabilityZones:
+        - !Sub "${AWS::Region}a"
+        - !Sub "${AWS::Region}b"
+      LaunchConfigurationName: !Ref MyLaunchConfig
+      MinSize: 2
+      MaxSize: 5
+      DesiredCapacity: 2
+      VPCZoneIdentifier:
+        - !Ref SubnetA
+        - !Ref SubnetB
+
+Mappings:
+  AWSRegionToAMI:
+    us-east-1:
+      AMI: "ami-0c94855ba95c71c99"
+    us-east-2:
+      AMI: "ami-0578f2b35d0328762"
+    us-west-1:
+      AMI: "ami-0d5eff06f840b45e9"
+    us-west-2:
+      AMI: "ami-095b5a6c1a7d3d6c3"
