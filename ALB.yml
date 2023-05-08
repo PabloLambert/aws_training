@@ -1,0 +1,60 @@
+Parameters:
+  TargetGroup:
+    Type: String
+    Description: ARN of the target group to associate with the ALB
+  SubnetA:
+    Type: String
+    Description: "Subnet A ID"
+  SubnetB:
+    Type: String
+    Description: "Subnet B ID"
+  VpcId:
+    Type: String
+    Description: "VPC ID"
+
+Resources:
+  MyALB:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Name: MyALB
+      Scheme: internet-facing
+      Type: application
+      IpAddressType: ipv4
+      Subnets: 
+        - !Ref SubnetA
+        - !Ref SubnetB
+      SecurityGroups: 
+              - !Ref ALBSecurityGroup
+      LoadBalancerAttributes:
+        - Key: idle_timeout.timeout_seconds
+          Value: '60'
+  MyListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      LoadBalancerArn: !Ref MyALB
+      Protocol: HTTP
+      Port: 80
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn: !Ref TargetGroup
+  ALBSecurityGroup:
+    Type: "AWS::EC2::SecurityGroup"
+    Properties:
+        GroupDescription: "ALBSecurityGroup"
+        GroupName: "ALBSecurityGroup"
+        VpcId: !Ref VpcId
+        SecurityGroupIngress: 
+          - 
+                CidrIp: "0.0.0.0/0"
+                FromPort: 80
+                IpProtocol: "tcp"
+                ToPort: 80
+          - 
+                CidrIp: "0.0.0.0/0"
+                FromPort: 443
+                IpProtocol: "tcp"
+                ToPort: 443
+        SecurityGroupEgress: 
+           - 
+                CidrIp: "0.0.0.0/0"
+                IpProtocol: "-1"

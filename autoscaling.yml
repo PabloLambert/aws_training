@@ -15,6 +15,8 @@ Resources:
     Properties:
       ImageId: !FindInMap [AWSRegionToAMI, !Ref "AWS::Region", "AMI"]
       InstanceType: "t2.micro"
+      AssociatePublicIpAddress: true
+      KeyName: "key-vector-pl"
       SecurityGroups:
         - !Ref MySecurityGroup
       UserData:
@@ -49,9 +51,28 @@ Resources:
       MinSize: 2
       MaxSize: 5
       DesiredCapacity: 2
+      TargetGroupARNs:
+        - !Ref MyTargetGroup      
       VPCZoneIdentifier:
         - !Ref SubnetA
         - !Ref SubnetB
+  MyTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      Port: 80
+      Protocol: HTTP
+      VpcId: !Ref VpcId
+      TargetType: instance
+      HealthCheckEnabled: true
+      HealthCheckIntervalSeconds: 30
+      HealthCheckPath: /
+      HealthCheckPort: 'traffic-port'
+      HealthCheckProtocol: HTTP
+      HealthCheckTimeoutSeconds: 5
+      HealthyThresholdCount: 5
+      UnhealthyThresholdCount: 2
+      Matcher:
+        HttpCode: '200'
 
 Mappings:
   AWSRegionToAMI:
